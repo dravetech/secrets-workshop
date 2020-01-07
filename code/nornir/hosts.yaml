@@ -1,0 +1,13 @@
+---
+rtr00.bma:
+    groups:
+        - bma
+rtr01.bma:
+    groups:
+        - bma
+rtr00.cdg:
+    groups:
+        - cdg
+rtr01.cdg:
+    groups:
+        - cdg

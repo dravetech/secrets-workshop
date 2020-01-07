@@ -1,0 +1,26 @@
+baseURL = "https://example.com/"
+languageCode = "en-us"
+title = "A Hugo theme for creating Reveal.js presentations"
+disableKinds = ["sitemap", "RSS"]
+theme = "reveal-hugo"
+
+# uncomment for browsing at file:///
+# relativeURLs = true
+# uglyURLs = true
+
+[author]
+name = "David Barroso"
+
+# as of hugo 0.60 goldmark is the default
+# reveal-hugo doesn't support goldmark yet
+# so force to black friday
+[markup]
+defaultMarkdownHandler = "blackfriday"
+
+[outputFormats.Reveal]
+baseName = "index"
+mediaType = "text/html"
+isHTML = true
+
+[params.reveal_hugo]
+history = true

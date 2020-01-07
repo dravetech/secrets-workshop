@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+  <head>
+	<meta name="generator" content="Hugo 0.61.0" />
+    <meta charset="utf-8">
+<title>Managing secrets safely; an automation story</title>
+
+<meta name="author" content="David Barroso">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/reveal-js/css/reset.css">
+<link rel="stylesheet" href="/reveal-js/css/reveal.css"><link rel="stylesheet" href="/reveal-js/css/theme/black.css" id="theme">
+<link rel="stylesheet" href="/highlight-js/default.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+  
+
+    <section>
+
+<h1 id="managing-secrets-safely">Managing secrets safely</h1>
+
+<h2 id="an-automation-story">An automation story</h2>
+
+<p>David Barroso Pardo &lt;<a href="mailto:dbarrosop@dravetech.com">dbarrosop@dravetech.com</a>&gt;</p>
+</section>
+
+  
+
+    <section><section data-shortcode-section>
+<h1 id="agenda">Agenda</h1>
+
+<ol>
+<li>Introduction</li>
+</ol>
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h1 id="introduction">Introduction</h1>
+
+<ol>
+<li>Introduction
+
+<ol>
+<li>Disclaimer</li>
+<li>What are secrets</li>
+</ol></li>
+
+<li><p><span class='greyed '>One</span></p></li>
+
+<li><p><span class='greyed '>Two</span></p></li>
+</ol>
+
+</section><section>
+
+<h2 id="disclaimer">Disclaimer</h2>
+
+<p>This is not a security talk. Even though we will be discussing security topics the aim is on how to consume secrets.</p>
+
+<p>Always be mindful of who you and your company are, the best practices for your industry and always follow the guidelines and instructions from your security team.</p>
+
+</section><section>
+
+<h2 id="what-are-secrets">What are secrets?</h2>
+
+<p>A secret is any piece of information that can be used for authenticating a user or system or to secure information.</p>
+
+<p>Examples of secrets are:</p>
+
+<ul>
+<li>Passwords</li>
+<li>Tokens</li>
+<li>Private keys</li>
+<li><del>Usernames</del></li>
+<li><del>FQDNs</del></li>
+<li><del>Server ports</del></li>
+</ul>
+
+</section><section>
+
+<h2 id="user-secrets">User secrets</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>localhost $ ssh user@remote.acme.com
+user@remote.acme.com<span style="color:#960050;background-color:#1e0010">&#39;</span>s password:
+remote #</code></pre></div>
+<p>Easy to store and consume, i.e. store in a password manager and enter when requested</p>
+
+</section><section>
+
+<h2 id="service-secrets">Service secrets</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#f92672">from</span> netmiko <span style="color:#f92672">import</span> ConnectHandler
+
+params <span style="color:#f92672">=</span> {
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">device_type</span><span style="color:#e6db74">&#39;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">cisco_ios</span><span style="color:#e6db74">&#39;</span>,
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">host</span><span style="color:#e6db74">&#39;</span>:   <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">10.10.10.10</span><span style="color:#e6db74">&#39;</span>,
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">username</span><span style="color:#e6db74">&#39;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">automator</span><span style="color:#e6db74">&#39;</span>,
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">password</span><span style="color:#e6db74">&#39;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">???</span><span style="color:#e6db74">&#39;</span>,
+}
+device <span style="color:#f92672">=</span> ConnectHandler(<span style="color:#f92672">*</span><span style="color:#f92672">*</span>params)
+<span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span></code></pre></div>
+<p>Not so easy to store and consume, needs a store that can be queried and that is secure. This store may require additional authentication.</p>
+
+<p class="bs-callout bs-callout-info">
+💡 This applies not only to services but any piece of code that runs without user interaction.
+</p>
+
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h1 id="do-s-and-don-ts">Do&rsquo;s and Don&rsquo;ts</h1>
+
+</section><section>
+
+<h2 id="use-different-secrets-with-tight-permissions">Use different secrets with tight permissions</h2>
+
+<ul>
+<li>To reduce exposure if a secret is leaked</li>
+<li>To make it easier to rollout new secrets if needed</li>
+</ul>
+
+</section><section>
+
+<h2 id="minimize-paper-trail">Minimize paper trail</h2>
+
+<p>Your application will always need some secret; certificates, tokens to access external services or even a secret to access your secrets store. Make sure you provide those secrets to your application with little to no paper trail:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ export SOME_SECRET_TOKEN=`cat some_secret_token`
+$ ./myapp --some-secret-token $SOME_SECRET_TOKEN</code></pre></div>
+<p>Careful with passing secrets in the command line as they will go to the history:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ ./myapp --some-secret-token a-secret-token
+history | tail -n 1
+2476 ./myapp --some-secret-token a-secret-token
+...</code></pre></div>
+</section><section>
+
+<p>Orchestrators like <code>kubernetes</code>, <code>docker swarm</code>, etc. have mechanisms to inject secrets into environment variables and files for you, use those capabilities where available!</p>
+
+</section><section>
+
+<h2 id="minimize-paper-trail-1">Minimize paper trail</h2>
+
+</section><section>
+
+<h2 id="do-not-hardcode-secrets">Do not hardcode secrets</h2>
+
+<p>Never hardcode secrets into your application, not even test/dev secrets.</p>
+
+</section><section>
+
+<p><img src="img/cve.png" alt="cve-hardcoded-credentials" /></p>
+
+</section><section>
+
+<h2 id="do-not-commit-secrets-to-git">Do not commit secrets to git</h2>
+
+<p>If you store the secrets in files, add them to <code>.gitignore</code> or, even better, make sure they are outside of a git workspace.</p>
+
+</section><section>
+
+<p><img src="img/token_leak.png" alt="starbucks-leaks-token" /></p>
+
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h1 id="gnupg">GnuPG</h1>
+
+<p class="bs-callout bs-callout-quote">
+ <a href="https://gnupg.org/">GnuPG</a> is a complete and free implementation of the OpenPGP standard as defined by RFC4880 (also known as PGP). GnuPG allows you to encrypt and sign your data and communications; it features a versatile key management system, along with access modules for all kinds of public key directories. GnuPG, also known as GPG, is a command line tool with features for easy integration with other applications. A wealth of frontend applications and libraries are available. GnuPG also provides support for S/MIME and Secure Shell (ssh).
+</p>
+
+</section><section>
+
+<p>In this section we are going to see how to use it to encrypt a decrypt files</p>
+
+<p class="bs-callout bs-callout-info">
+💡 Files for this section can be found in the folder <code>./code/gpg/</code>
+</p>
+
+</section><section>
+
+<h2 id="encrypting-files">Encrypting files</h2>
+
+<p>File in clear-text:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ cat unencrypted.txt
+This is text we want to secure</code></pre></div>
+<p>Encrypting the file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --symmetric -o unencrypted.txt.gpg unencrypted.txt
+
+$ file unencrypted.txt.gpg
+unencrypted.txt.gpg: GPG symmetrically encrypted data (AES cipher)</code></pre></div>
+<p class="bs-callout bs-callout-info">
+💡 Password is <code>apassword</code>
+</p>
+
+</section><section>
+
+<h2 id="decrypting-files">Decrypting files</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --decrypt -o unencrypted.txt unencrypted.txt.gpg
+gpg: AES encrypted data
+gpg: encrypted with 1 passphrase</code></pre></div>
+</section><section>
+
+<h2 id="more-about-gnupg">More about GnuPG</h2>
+
+<ul>
+<li>Smartcards</li>
+<li>asymmetric encryption</li>
+</ul>
+
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h1 id="encrypted-environment">Encrypted environment</h1>
+
+<p>In this example we are going to use an encrypted file to load environment variables that will only be available to our application.</p>
+
+<p class="bs-callout bs-callout-info">
+Example can be found under <code>./code/encrypted_environment/</code>
+</p>
+
+</section><section>
+
+<h2 id="environment-file">Environment file</h2>
+
+<p>The encrypted file with the secrets can be found in the same folder as <code>secrets.env.gpg</code>.</p>
+
+<p>We can verify it&rsquo;s encrypted:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ file secrets.env.gpg
+secrets.env.gpg: GPG symmetrically encrypted data <span style="color:#f92672">(</span>AES cipher<span style="color:#f92672">)</span></code></pre></div>
+</section><section>
+
+<p>We can use the <code>gpg</code> tool to decrypt the file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --decrypt secrets.env.gpg
+gpg: AES encrypted data
+gpg: encrypted with <span style="color:#ae81ff">1</span> passphrase
+DEFAULT_PASSWORD<span style="color:#f92672">=</span>this-is-the-default-password
+BMA_PASSWORD<span style="color:#f92672">=</span>this-is<span style="color:#f92672">=</span>the-password-for-bma</code></pre></div>
+<p class="bs-callout bs-callout-info">
+Password for the encrypted file is <code>apassword</code>
+</p>
+
+</section><section>
+
+<p>As you probably noticed, we have two environment variables in the file:</p>
+
+<ul>
+<li><code>DEFAULT_PASSWORD</code> - This is the password we will use unless specified otherwise</li>
+<li><code>BMA_PASSWORD</code> - This is the password we will use for devices in the <code>bma</code> group</li>
+</ul>
+
+</section><section>
+
+<p>Simple python script to verify we can decrypt and load the environment correctly:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#75715e">#!/usr/bin/env python</span>
+<span style="color:#f92672">import</span> os
+
+
+default <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>getenv(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">DEFAULT_PASSWORD</span><span style="color:#e6db74">&#34;</span>)
+bma <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>getenv(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">BMA_PASSWORD</span><span style="color:#e6db74">&#34;</span>)
+
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">DEFAULT_PASSWORD = {default}</span><span style="color:#e6db74">&#34;</span>)
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">BMA_PASSWORD = {bma}</span><span style="color:#e6db74">&#34;</span>)</code></pre></div>
+<p class="bs-callout bs-callout-info">
+Full script can be found in the same folder as <code>script.py</code>
+</p>
+
+</section><section>
+
+<p>We can use the <code>env</code> command combined with the <code>gpg</code> tool to load the environment for our script:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ env <span style="color:#66d9ef">$(</span>gpg --decrypt secrets.env.gpg<span style="color:#66d9ef">)</span> ./script.py
+gpg: AES encrypted data
+gpg: encrypted with <span style="color:#ae81ff">1</span> passphrase
+DEFAULT_PASSWORD <span style="color:#f92672">=</span> this-is-the-default-password
+BMA_PASSWORD <span style="color:#f92672">=</span> this-is<span style="color:#f92672">=</span>the-password-for-bma</code></pre></div>
+</section><section>
+
+<h2 id="nornir-example">Nornir example</h2>
+
+<p>As a more elaborate example we are going to see how we can apply what we have seen in this section to a nornir script</p>
+
+</section><section>
+
+<h3 id="inventory">Inventory</h3>
+
+<p class="bs-callout bs-callout-info">
+Nornir inventory can be found under <code>./code/nornir/</code>
+</p>
+
+</section><section>
+
+<p>Hosts:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>---
+rtr00.bma:
+    groups:
+        - bma
+rtr01,bma:
+    groups:
+        - bma
+rtr00.cdg:
+    groups:
+        - cdg
+rtr01.cdg:
+    groups:
+        - cdg</code></pre></div>
+</section><section>
+
+<p>Groups:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>---
+bma: {}
+cdg: {}</code></pre></div>
+<p>Defaults:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>---
+username: automator</code></pre></div>
+</section><section>
+
+<h3 id="script">Script</h3>
+
+<ol>
+<li>Create a simple task that will print each device&rsquo;s hostname, username and password</li>
+<li>Add a short function to load the environment and assign the password to the inventory</li>
+<li>Run the task over each device</li>
+</ol>
+
+<p class="bs-callout bs-callout-info">
+Full script can be found in the same folder as <code>nornir_script.py</code>
+</p>
+
+</section><section>
+
+<p>The task:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_credentials</span>(task):
+    <span style="color:#66d9ef">print</span>(
+        f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{task.host.name} - {task.host.username}/{task.host.password}</span><span style="color:#e6db74">&#34;</span>
+    )</code></pre></div>
+</section><section>
+
+<p>The function to load the environment:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">load_creds_from_env</span>(nr):
+    nr<span style="color:#f92672">.</span>inventory<span style="color:#f92672">.</span>defaults<span style="color:#f92672">.</span>password <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>getenv(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">DEFAULT_PASSWORD</span><span style="color:#e6db74">&#34;</span>)
+
+    <span style="color:#66d9ef">for</span> name, group <span style="color:#f92672">in</span> nr<span style="color:#f92672">.</span>inventory<span style="color:#f92672">.</span>groups<span style="color:#f92672">.</span>items():
+        env_name <span style="color:#f92672">=</span> f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{name.upper()}_PASSWORD</span><span style="color:#e6db74">&#34;</span>
+        group<span style="color:#f92672">.</span>password <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>getenv(env_name)</code></pre></div>
+</section><section>
+
+<p>Running the task over all the hosts after loading the environment:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>nr <span style="color:#f92672">=</span> InitNornir(<span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>)
+
+load_creds_from_env(nr)
+
+nr<span style="color:#f92672">.</span>run(task<span style="color:#f92672">=</span>print_credentials)</code></pre></div>
+</section><section>
+
+<p>Running the script:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ env $(gpg --decrypt secrets.env.gpg) ./nornir_script.py
+gpg: AES encrypted data
+gpg: encrypted with 1 passphrase
+rtr00.bma - automator/this-is=the-password-for-bma
+rtr01,bma - automator/this-is=the-password-for-bma
+rtr00.cdg - automator/this-is-the-default-password
+rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
+</section><section>
+
+<h1 id="other-variants">Other variants</h1>
+
+<ol>
+<li>Encrypt/Decrypt using asymmetric encryption</li>
+<li>Decrypt directly in the python code with <a href="https://pythonhosted.org/python-gnupg/">python-gnupg</a></li>
+<li>Use <a href="https://www.passwordstore.org">pass</a></li>
+</ol>
+
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h1 id="encrypted-inventory">Encrypted inventory</h1>
+
+<p>In this example we are going to encrypt the data we want to consume with <code>gpg</code> and load it directly from the code.</p>
+
+<p>To demonstrate it we are going to include the secrets in nornir&rsquo;s inventory file, encrypt it and create a custom inventory plugin that will load the encrypted files directly after asking the user for the password.</p>
+
+</section><section>
+
+<h2 id="the-inventory">The inventory</h2>
+
+<p class="bs-callout bs-callout-info">
+Password for the encrypted files is <code>apassword</code>
+</p>
+
+</section><section>
+
+<p>Hosts:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --decrypt hosts.yaml.gpg
+gpg: AES encrypted data
+gpg: encrypted with <span style="color:#ae81ff">1</span> passphrase
+---
+rtr00.bma:
+    groups:
+        - bma
+rtr01,bma:
+    groups:
+        - bma
+rtr00.cdg:
+    groups:
+        - cdg
+rtr01.cdg:
+    groups:
+        - cdg</code></pre></div>
+</section><section>
+
+<p>Groups:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --decrypt groups.yaml.gpg
+gpg: AES encrypted data
+gpg: encrypted with <span style="color:#ae81ff">1</span> passphrase
+---
+bma:
+    password: this-is-the-password-for-bma
+cdg: {}</code></pre></div>
+<p>Defaults:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --decrypt defaults.yaml.gpg
+gpg: AES encrypted data
+gpg: encrypted with <span style="color:#ae81ff">1</span> passphrase
+---
+username: automator
+password: this-is-the-default-password</code></pre></div>
+</section><section>
+
+<h2 id="the-inventory-plugin">The inventory plugin</h2>
+
+<p class="bs-callout bs-callout-info">
+Full script can be found in the same folder as <code>inv.py</code>
+</p>
+
+</section><section>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decrypt_and_load</span>(filename, passphrase):
+    <span style="color:#75715e"># initialize gpg</span>
+    gpg <span style="color:#f92672">=</span> GPG(gnupghome<span style="color:#f92672">=</span>f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{os.environ[</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">HOME</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">]}/.gnupg</span><span style="color:#e6db74">&#34;</span>)
+
+    <span style="color:#75715e"># open the encrypted file and decrypt it</span>
+    <span style="color:#66d9ef">with</span> open(filename, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">rb</span><span style="color:#e6db74">&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        data <span style="color:#f92672">=</span> gpg<span style="color:#f92672">.</span>decrypt_file(f, passphrase<span style="color:#f92672">=</span>passphrase)
+
+    <span style="color:#75715e"># check for errors</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> data<span style="color:#f92672">.</span>ok:
+        <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">Exception</span>(data<span style="color:#f92672">.</span>stderr)
+
+    <span style="color:#75715e"># load the contents as yaml</span>
+    yml <span style="color:#f92672">=</span> ruamel<span style="color:#f92672">.</span>yaml<span style="color:#f92672">.</span>YAML(typ<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">safe</span><span style="color:#e6db74">&#34;</span>)
+    <span style="color:#66d9ef">return</span> yml<span style="color:#f92672">.</span>load(data<span style="color:#f92672">.</span>data)</code></pre></div>
+</section><section>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">EncryptedInventory</span>(Inventory):
+    <span style="color:#66d9ef">def</span> __init__(
+      self, host_file, group_file, defaults_file,
+      passphrase, <span style="color:#f92672">*</span>args, <span style="color:#f92672">*</span><span style="color:#f92672">*</span>kwargs,
+    ):
+
+        hosts <span style="color:#f92672">=</span> decrypt_and_load(host_file, passphrase)
+        groups <span style="color:#f92672">=</span> decrypt_and_load(group_file, passphrase)
+        defaults <span style="color:#f92672">=</span> decrypt_and_load(defaults_file, passphrase)
+
+        super()<span style="color:#f92672">.</span>__init__(
+          hosts<span style="color:#f92672">=</span>hosts, groups<span style="color:#f92672">=</span>groups, defaults<span style="color:#f92672">=</span>defaults,
+          <span style="color:#f92672">*</span>args, <span style="color:#f92672">*</span><span style="color:#f92672">*</span>kwargs
+        )</code></pre></div>
+</section><section>
+
+<h2 id="the-script">The script</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#f92672">import</span> getpass
+
+nr <span style="color:#f92672">=</span> InitNornir(
+    inventory<span style="color:#f92672">=</span>{
+        <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">plugin</span><span style="color:#e6db74">&#34;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">inv.EncryptedInventory</span><span style="color:#e6db74">&#34;</span>,
+        <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">options</span><span style="color:#e6db74">&#34;</span>: {
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">host_file</span><span style="color:#e6db74">&#34;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">hosts.yaml.gpg</span><span style="color:#e6db74">&#34;</span>,
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">group_file</span><span style="color:#e6db74">&#34;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">groups.yaml.gpg</span><span style="color:#e6db74">&#34;</span>,
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">defaults_file</span><span style="color:#e6db74">&#34;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">defaults.yaml.gpg</span><span style="color:#e6db74">&#34;</span>,
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">passphrase</span><span style="color:#e6db74">&#34;</span>: getpass<span style="color:#f92672">.</span>getpass(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">Password:</span><span style="color:#e6db74">&#39;</span>),
+        },
+    },
+)
+
+
+nr<span style="color:#f92672">.</span>run(task<span style="color:#f92672">=</span>print_credentials)</code></pre></div>
+<p class="bs-callout bs-callout-info">
+Full script can be found in the same folder as <code>nornir_script.py</code>
+</p>
+
+</section><section>
+
+<h2 id="usage">Usage</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ ./nornir_script.py
+Password:
+rtr00.bma - automator/this-is-the-password-for-bma
+rtr01,bma - automator/this-is-the-password-for-bma
+rtr00.cdg - automator/this-is-the-default-password
+rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h1 id="hashicorp-vault-101">Hashicorp vault 101</h1>
+
+<p><a href="https://www.vaultproject.io/">Hashicorp&rsquo;s vault</a>, often abbreviated as <code>hcv</code>, is a service that allows you to:</p>
+
+<p class="bs-callout">
+secure, store and tightly control access to tokens, passwords, certificates, encryption keys [...] using a UI, CLI, or HTTP API.
+</p>
+
+<p>Service can be interacted with using the CLI, a WEB UI and an API.</p>
+
+</section><section>
+
+<p>Storing secrets:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv put secret/bma/routers/ password=some-secret-password
+Key              Value
+---              -----
+created_time     2020-01-06T17:32:33.690632732Z
+deletion_time    n/a
+destroyed        false
+version          1
+
+$ vault kv put secret/bma/switches password=some-secret-password-b
+Key              Value
+---              -----
+created_time     2020-01-06T17:32:41.891355726Z
+deletion_time    n/a
+destroyed        false
+version          1
+
+$ vault kv put secret/cdg/routers/ password=some-secret-password-c
+...</code></pre></div>
+</section><section>
+
+<p>Listing secrets:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv list secret
+Keys
+----
+bma/
+cdg/
+
+$ vault kv list secret/bma
+Keys
+----
+routers
+switches</code></pre></div>
+</section><section>
+
+<p>Reading secrets:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv get secret/bma/routers
+====== Metadata ======
+Key              Value
+---              -----
+created_time     2020-01-06T17:32:33.690632732Z
+deletion_time    n/a
+destroyed        false
+version          1
+
+====== Data ======
+Key         Value
+---         -----
+password    some-secret-password-a</code></pre></div>
+</section><section>
+
+<p>Versioning support:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv put secret/bma/routers password=a-new-password
+Key              Value
+---              -----
+created_time     2020-01-06T17:36:52.977018765Z
+deletion_time    n/a
+destroyed        false
+version          2
+
+$ vault kv get secret/bma/routers
+====== Metadata ======
+Key              Value
+---              -----
+created_time     2020-01-06T17:36:52.977018765Z
+deletion_time    n/a
+destroyed        false
+version          2
+
+====== Data ======
+Key         Value
+---         -----
+password    a-new-password</code></pre></div>
+</section><section>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv get --version 1 secret/bma/routers
+====== Metadata ======
+Key              Value
+---              -----
+created_time     2020-01-06T17:32:33.690632732Z
+deletion_time    n/a
+destroyed        false
+version          1
+
+====== Data ======
+Key         Value
+---         -----
+password    some-secret-password-a</code></pre></div>
+</section><section>
+
+<h2 id="paths">Paths</h2>
+
+<p>Paths allows you to create hierarchical structures to organize your passwords. For instance:</p>
+
+<ul>
+<li><code>secret/$site</code> - secrets that apply to devices on a given site</li>
+<li><code>secret/$site/$device</code> - secrets that apply to a given device</li>
+<li><code>secret/credentials/$user</code> - credentials for a given user</li>
+</ul>
+
+<p>Paths support multiple k/v pairs:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv put secret/dbarroso favorite-color=$COLOR favorite-food=$FOOD
+Key              Value
+---              -----
+created_time     2020-01-06T17:44:20.939288919Z
+deletion_time    n/a
+destroyed        false
+version          1</code></pre></div>
+</section><section>
+
+<h2 id="secrets-engines">Secrets engines</h2>
+
+<p><a href="https://www.vaultproject.io/docs/secrets/index.html">Secrets engines</a> are plugins that allow you to generate, store or encrypt data. The default engine allows you to store arbitrary k/v pairs in memory pairs but other secret engines allows you to store them in cloud services, consul, etc., to integrate with Active Directory, Azure, etc., or to generate certificates or ssh keys on demand.</p>
+
+</section><section>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>Vault support many mechanisms to <a href="https://www.vaultproject.io/docs/auth/index.html">authenticate users</a>; LDAP, radius, JWT, Github, TLS certificates, Tokens, username/passwords&hellip;</p>
+
+</section><section>
+
+<h2 id="policies">Policies</h2>
+
+<p><a href="https://www.vaultproject.io/intro/getting-started/policies.html">Policies</a> allow you to define which actions can be performed on a given path:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#75715e"># a-sample-policy
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">path</span> <span style="color:#e6db74">&#34;secret/bma&#34;</span> {
+  capabilities <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;create&#34;</span>]
+}
+<span style="color:#66d9ef">path</span> <span style="color:#e6db74">&#34;secret/cdg/routers&#34;</span> {
+  capabilities <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;read&#34;</span>]
+}</code></pre></div>
+<p>Policies can be assigned to users to restrict their access:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault write auth/userpass/users/dbarroso policies=admins</code></pre></div>
+</section><section>
+
+<h2 id="seal-unseal">Seal/Unseal</h2>
+
+<p>Vault data is stored encrypted. Unsealing is the act of telling vault how to decrypt the data while sealing is the act of telling vault to forget how to do it. Vault is quite powerful and it allows you to be able to split the keys amongst different users so a single actor can&rsquo;t unseal the service.</p>
+
+</section><section>
+
+<h2 id="dev-server">Dev server</h2>
+
+<p>If you want to play with vault you can:</p>
+
+<ol>
+<li>Go to the folder <code>./code/hcv/</code> and start a dev server with the command <code>docker-compose up</code></li>
+<li>On a different shell execute <code>docker-compose exec vault-dev-server sh</code>, this should give you access to the docker container running vault</li>
+<li>In the container execute <code>vault login</code> and enter the token <code>a-silly-token-for-dev</code></li>
+<li>Feel free to try the commands shown in the previous slides</li>
+<li>Do not forget to stop the environment with <code>docker-compose down</code> once you are done.</li>
+</ol>
+
+</section><section>
+
+<p>Considerations:</p>
+
+<ol>
+<li>The environment provided with this presentation is not ready for production purposes</li>
+<li>Data is not persisted so stopping the environment will wipe out the secrets</li>
+<li>There are no users and no policies and the root token is hardcoded</li>
+</ol>
+
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h1 id="hcv-secrets">HCV: secrets</h1>
+
+<p>In this section we are going to:</p>
+
+<ol>
+<li>store our passwords in hashicorp&rsquo;s vault</li>
+<li>store the token to access the vault in an encrypted environment file</li>
+<li>retrieve the passwords directly in our python code</li>
+</ol>
+
+<p class="bs-callout bs-callout-info">
+Example can be found under <code>./code/hcv_secrets/</code>
+</p>
+
+</section><section>
+
+<h2 id="starting-the-dev-server">Starting the dev server</h2>
+
+<p>We can start the dev server automatically with <code>docker-compose up</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ docker-compose up
+Creating network &#34;hcv_secrets_default&#34; with the default driver
+Creating hcv_secrets_vault-dev-server_1 ... done
+Attaching to hcv_secrets_vault-dev-server_1
+vault-dev-server_1  | ==&gt; Vault server configuration:
+vault-dev-server_1  |
+vault-dev-server_1  |              Api Address: http://0.0.0.0:8200
+vault-dev-server_1  |                      Cgo: disabled
+vault-dev-server_1  |          Cluster Address: https://0.0.0.0:8201
+vault-dev-server_1  |               Listener 1: tcp (addr: &#34;0.0.0.0:8200&#34;, cluster addres...
+vault-dev-server_1  |                Log Level: info
+vault-dev-server_1  |                    Mlock: supported: true, enabled: false
+vault-dev-server_1  |            Recovery Mode: false
+vault-dev-server_1  |                  Storage: inmem
+vault-dev-server_1  |                  Version: Vault v1.3.1
+...</code></pre></div>
+</section><section>
+
+<p>Somewhere in the output you should see the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>The unseal key and root token are displayed below in case you want to
+seal/unseal the Vault or re-authenticate.
+
+Unseal Key: WOLKhMovPzj30NsF2ZrAAuVaQ/957lezWWlEOS9/ID4=
+Root Token: a-silly-token-for-dev
+
+Development mode should NOT be used in production installations!</code></pre></div>
+<p>A reminder this is not suitable for production purposes. It also shows the root token you can use to interact with vault via its API.</p>
+
+</section><section>
+
+<p>Now we are going to prepopulate the server with some passwords using the script <code>init.sh</code>:</p>
+
+<ul>
+<li><code>defaults</code> - Our default password if not other password is specified</li>
+<li><code>bma</code> - Our default password for the group <code>bma</code>.</li>
+<li><code>bma/rtr00</code> - A specific password for the device <code>rtr00.bma</code></li>
+</ul>
+
+</section><section>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ ./init.sh
+Token (will be hidden):
+Success! You are now authenticated. The token information displayed
+below is already stored in the token helper. You do NOT need to run
+&#34;vault login&#34; again. Future Vault requests will automatically use this
+token.
+
+Key                  Value
+---                  -----
+token                a-silly-token-for-dev
+token_accessor       h4FKkTlzYlQjrJgrvJGwTNRo
+token_duration       ∞
+token_renewable      false
+token_policies       [&#34;root&#34;]
+identity_policies    []
+policies             [&#34;root&#34;]
+...</code></pre></div>
+</section><section>
+
+<h2 id="test-script">Test script</h2>
+
+<p>To demonstrate we can read the passwords from vault we are going to use a test script.</p>
+
+<p class="bs-callout bs-callout-info">
+Full script can be found in the same folder as <code>test_script.py</code>
+</p>
+
+</section><section>
+
+<p>Next function will try to find the passwords for a given path or return <code>None</code> if none found:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#f92672">import</span> hvac
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_password_from_path</span>(path):
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    Return the password if found or None if the path doesn</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">t exist</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    client <span style="color:#f92672">=</span> hvac<span style="color:#f92672">.</span>Client()
+    client<span style="color:#f92672">.</span>token <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>getenv(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">HCV_TOKEN</span><span style="color:#e6db74">&#34;</span>)
+
+    <span style="color:#66d9ef">try</span>:
+        resp <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>secrets<span style="color:#f92672">.</span>kv<span style="color:#f92672">.</span>read_secret_version(path<span style="color:#f92672">=</span>path)
+        <span style="color:#66d9ef">return</span> resp[<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">data</span><span style="color:#e6db74">&#34;</span>][<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">data</span><span style="color:#e6db74">&#34;</span>]<span style="color:#f92672">.</span>get(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">password</span><span style="color:#e6db74">&#34;</span>)
+    <span style="color:#66d9ef">except</span> InvalidPath:
+        <span style="color:#66d9ef">return</span> None</code></pre></div>
+<p>Note that the token for vault is read from the environment. We will pass it via an encrypted file.</p>
+
+</section><section>
+
+<p>Now we can use the previous function to retrieve the known paths and print them on the screen:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">print</span>(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">default = {get_password_from_path(</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">defaults</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">)}</span><span style="color:#e6db74">&#34;</span>)
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">bma = {get_password_from_path(</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">bma</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">)}</span><span style="color:#e6db74">&#34;</span>)
+<span style="color:#66d9ef">print</span>(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">bma/rtr00 = {get_password_from_path(</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">bma/rtr00</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">)}</span><span style="color:#e6db74">&#34;</span>)</code></pre></div>
+</section><section>
+
+<p>As seen previously, we are going to pass the secret via an encrypted environment file by combining the <code>env</code> and <code>gpg</code> tools :</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --decrypt secrets.env.gpg
+gpg: AES encrypted data
+gpg: encrypted with 1 passphrase
+HCV_TOKEN=a-silly-token-for-dev
+
+$ env $(gpg --decrypt secrets.env.gpg) ./test_script.py
+gpg: AES encrypted data
+gpg: encrypted with 1 passphrase
+default = this-is-the-default-password
+bma = this-is-the-password-for-bma
+bma/rtr00 = this-is-rtr00-password</code></pre></div>
+</section><section>
+
+<h2 id="nornir-script">Nornir script</h2>
+
+<p>Now let&rsquo;s combine everything we have seen so far to populate nornir&rsquo;s passwords by reading them from vault.</p>
+
+</section><section>
+
+<p>Instead of <code>load_creds_from_env</code> we will use a new function that will use the previous function <code>get_password_from_path</code> to read the passwords from vault:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">load_creds_from_hcv</span>(nr):
+    nr<span style="color:#f92672">.</span>inventory<span style="color:#f92672">.</span>defaults<span style="color:#f92672">.</span>password <span style="color:#f92672">=</span> get_password_from_path(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">defaults</span><span style="color:#e6db74">&#34;</span>)
+
+    <span style="color:#66d9ef">for</span> name, group <span style="color:#f92672">in</span> nr<span style="color:#f92672">.</span>inventory<span style="color:#f92672">.</span>groups<span style="color:#f92672">.</span>items():
+        group<span style="color:#f92672">.</span>password <span style="color:#f92672">=</span> get_password_from_path(name)</code></pre></div>
+</section><section>
+
+<p>We need a transform function to populate the passwords for each host:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">lookup_host_password</span>(host):
+    <span style="color:#75715e"># a hostname can be rtr00.bma so we need to convert it to bma/rtr00</span>
+    path <span style="color:#f92672">=</span> f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{host.name.split(</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">.</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">)[1]}/{host.name.split(</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">.</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">)[0]}</span><span style="color:#e6db74">&#34;</span>
+    host<span style="color:#f92672">.</span>password <span style="color:#f92672">=</span> get_password_from_path(path)</code></pre></div>
+<p class="bs-callout bs-callout-info">
+A transform function is a function that receives a nornir Host and allows you to manipulate it. Once passed to <code>InitNornir</code>, nornir will make sure it's run on each host.
+</p>
+
+</section><section>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>nr <span style="color:#f92672">=</span> InitNornir(
+    inventory<span style="color:#f92672">=</span>{
+        <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">options</span><span style="color:#e6db74">&#34;</span>: {
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">host_file</span><span style="color:#e6db74">&#34;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">../nornir/hosts.yaml</span><span style="color:#e6db74">&#34;</span>,
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">group_file</span><span style="color:#e6db74">&#34;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">../nornir/groups.yaml</span><span style="color:#e6db74">&#34;</span>,
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">defaults_file</span><span style="color:#e6db74">&#34;</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">../nornir/defaults.yaml</span><span style="color:#e6db74">&#34;</span>,
+        },
+        <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">transform_function</span><span style="color:#e6db74">&#34;</span>: lookup_host_password,
+    },
+)
+
+load_creds_from_hcv(nr)
+
+nr<span style="color:#f92672">.</span>run(task<span style="color:#f92672">=</span>print_credentials)</code></pre></div>
+</section><section>
+
+<p>Running the script setting the environment:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ env $(gpg --decrypt secrets.env.gpg) ./nornir_script.py
+gpg: AES encrypted data
+gpg: encrypted with 1 passphrase
+rtr00.bma - automator/this-is-rtr00-password
+rtr01.bma - automator/this-is-the-password-for-bma
+rtr00.cdg - automator/this-is-the-default-password
+rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
+</section>
+</section>
+    <section><section data-shortcode-section>
+<h2 id="maybe">Maybe</h2>
+
+</section><section>
+
+<h3 id="authentication-integrity-and-privacy">Authentication, Integrity and Privacy</h3>
+
+<p><strong>Authentication</strong> is the act of being able to prove the identity of a person or system</p>
+
+<p>Data has <strong>integrity</strong> if it can be proven it hasn&rsquo;t been manipulated by an unauthorized actor</p>
+
+<p><strong>Privacy</strong> is the condition of being free from unauthorized observers</p>
+
+</section><section>
+
+<h3 id="authentication-integrity-and-privacy-1">Authentication, Integrity and Privacy</h3>
+
+<p>If you can&rsquo;t guarantee any of these properties you can&rsquo;t guarantee a system is secure</p>
+
+<p><strong>TLS</strong> guarantees all three properties, however, if the private key of the certificate is leaked a malicious actor could impersonate the server and perform a MiTM attack (authentication being voided), decrypt user-server communications (privacy being compromised) and even manipulate the HTML code to redirect the user to malicious servers (integrity no longer guaranteed)</p>
+
+</section><section>
+
+</section>
+</section>
+
+</div>
+      
+
+    </div>
+<script type="text/javascript" src=/reveal-hugo/object-assign.js></script>
+
+<a href="/reveal-js/css/print/" id="print-location" style="display: none;"></a>
+<script type="text/javascript">
+  var printLocationElement = document.getElementById('print-location');
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = printLocationElement.href + (window.location.search.match(/print-pdf/gi) ? 'pdf.css' : 'paper.css');
+  document.getElementsByTagName('head')[0].appendChild(link);
+</script>
+
+<script type="application/json" id="reveal-hugo-site-params">{"history":true}</script>
+<script type="application/json" id="reveal-hugo-page-params">null</script>
+
+<script src="/reveal-js/js/reveal.js"></script>
+
+<script type="text/javascript">
+  
+  
+  function camelize(map) {
+    if (map) {
+      Object.keys(map).forEach(function(k) {
+        newK = k.replace(/(\_\w)/g, function(m) { return m[1].toUpperCase() });
+        if (newK != k) {
+          map[newK] = map[k];
+          delete map[k];
+        }
+      });
+    }
+    return map;
+  }
+  
+  var revealHugoDefaults = { center: true, controls: true, history: true, progress: true, transition: "slide" };
+  var revealHugoSiteParams = JSON.parse(document.getElementById('reveal-hugo-site-params').innerHTML);
+  var revealHugoPageParams = JSON.parse(document.getElementById('reveal-hugo-page-params').innerHTML);
+  
+  var options = Object.assign({},
+    camelize(revealHugoDefaults),
+    camelize(revealHugoSiteParams),
+    camelize(revealHugoPageParams));
+  Reveal.initialize(options);
+</script>
+
+
+  
+  
+  <script type="text/javascript" src="/reveal-js/plugin/markdown/marked.js"></script>
+  
+  <script type="text/javascript" src="/reveal-js/plugin/markdown/markdown.js"></script>
+  
+  <script type="text/javascript" src="/reveal-js/plugin/highlight/highlight.js"></script>
+  
+  <script type="text/javascript" src="/reveal-js/plugin/zoom-js/zoom.js"></script>
+  
+  
+  <script type="text/javascript" src="/reveal-js/plugin/notes/notes.js"></script>
+
+
+
+    
+    
+  <script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10&v=2"></' + 'script>')</script></body>
+</html>
