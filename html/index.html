@@ -853,6 +853,200 @@ rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
 </section>
 </section>
     <section><section data-shortcode-section>
+<h1 id="pki">PKI</h1>
+
+<p>In this section we are going to:</p>
+
+<ol>
+<li>Enable a PKI in hashicorp&rsquo;s vault</li>
+<li>Import a CA certificate</li>
+<li>Use <code>vault</code>&rsquo;s cli to interact with the PKI</li>
+<li>Use a simple python script to generate certificates on-demand</li>
+</ol>
+
+<p class="bs-callout bs-callout-info">
+Example can be found under <code>./code/hcv_pki/</code>
+</p>
+
+</section><section>
+
+<h2 id="starting-vault">Starting vault</h2>
+
+<p>Like in previous examples, you can start vault with <code>docker-compose up</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ docker-compose up
+Starting hcv_pki_vault-dev-server_1 ... done
+Attaching to hcv_pki_vault-dev-server_1
+vault-dev-server_1  | ==&gt; Vault server configuration:
+vault-dev-server_1  |
+vault-dev-server_1  |              Api Address: http://0.0.0.0:8200
+vault-dev-server_1  |                      Cgo: disabled
+vault-dev-server_1  |          Cluster Address: https://0.0.0.0:8201
+vault-dev-server_1  |               Listener 1: tcp (addr: &#34;0.0.0.0:8200&#34;, ...
+vault-dev-server_1  |                Log Level: info
+vault-dev-server_1  |                    Mlock: supported: true, enabled: false
+vault-dev-server_1  |            Recovery Mode: false
+vault-dev-server_1  |                  Storage: inmem
+vault-dev-server_1  |                  Version: Vault v1.3.1
+...</code></pre></div>
+</section><section>
+
+<h2 id="enable-pki-plugin">Enable PKI plugin</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape># we create the following alias to invoke the vault tool inside the container
+$ alias vault=&#34;docker-compose exec vault-dev-server vault&#34;
+
+# auth with vault, same password as previous sections
+$ vault login
+
+# Enable the pki plugin in the path switches_pki/...
+$ vault secrets enable -path=switches_pki pki
+
+# some config
+$ vault secrets tune -max-lease-ttl=87600h switches_pki
+
+$ vault write switches_pki/config/urls \
+    issuing_certificates=&#34;http://127.0.0.1:8200/v1/switches_pki/ca&#34; \
+    crl_distribution_points=&#34;http://127.0.0.1:8200/v1/switches_pki/crl&#34;</code></pre></div>
+</section><section>
+
+<h2 id="importing-the-ca-certificate">Importing the CA certificate</h2>
+
+<p>In order to generate certificates we will need a CA certificate to sign them. We can either generate our own certificate and install them in our client machines or we can create an intermediate CA off another CA or intermediate CA.</p>
+
+<p>To simplify things there is an already created self-signed CA in the folder <code>./ca.</code>. We can add it to vault as follows:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault write switches_pki/config/ca pem_bundle=@/ca/root_bundle.pem
+Success! Data written to: switches_pki/config/ca</code></pre></div>
+</section><section>
+
+<h1 id="pki-role">PKI Role</h1>
+
+<p>Now we need to create one or more PKI roles. Roles define parameters like domains supported, maximum TTL for the certificates, etc.:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault write switches_pki/roles/network-acme-com \
+        allowed_domains=&#34;network.acme.com&#34; \
+        allow_subdomains=true \
+        max_ttl=&#34;17520h&#34; # 2 years
+Success! Data written to: switches_pki/roles/network-acme-com</code></pre></div>
+</section><section>
+
+<h1 id="generating-cetificates">Generating cetificates</h1>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault write switches_pki/issue/network-acme-com common_name=&#34;rtr00.bma.network.acme.com&#34;
+Key                 Value
+---                 -----
+certificate         -----BEGIN CERTIFICATE-----
+MIIEkjCCAnqgAwIBAgIUW/M4eFCs5LFA6smJrRlT2H8KqtUwDQYJKoZIhvcNAQEL
+...
+
+expiration          1581611003
+issuing_ca          -----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIUA29vZkyJcXTOeWnmtD1FwVK44SQwDQYJKoZIhvcNAQEL
+...
+
+private_key         -----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEAmtaw8eHgom1zB39PJj0Yx1NUnaDONbLSdFHlrvUJV2+fQ5Co
+...
+
+private_key_type    rsa
+serial_number       15-32-65-89-7b-f9-29-86-57-13-6e-c4-c1-1e-9b-e6-5e-d4-d1-9f</code></pre></div>
+</section><section>
+
+<h2 id="listing-certificates">Listing certificates</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault list switches_pki/certs
+Keys
+----
+15-32-65-89-7b-f9-29-86-57-13-6e-c4-c1-1e-9b-e6-5e-d4-d1-9f
+5b-f3-38-78-50-ac-e4-b1-40-ea-c9-89-ad-19-53-d8-7f-0a-aa-d5</code></pre></div>
+</section><section>
+
+<h2 id="decoding-certificates">Decoding certificates</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault read switches_pki/cert/30-23-ce-9d-e2-a2-57-4a-2e-44-63-54-c9-15-3d-c5-a0-b0-68-ed \
+    -format=json \
+        | jq -r &#34;.data.certificate&#34; \
+        | openssl x509 -text -noout
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            30:23:ce:9d:e2:a2:57:4a:2e:44:63:54:c9:15:3d:c5:a0:b0:68:ed
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = AU, ST = Some-State, O = Internet Widgits Pty Ltd
+        Validity
+            Not Before: Jan 12 16:25:07 2020 GMT
+            Not After : Feb 13 16:25:37 2020 GMT
+        Subject: CN = rtr01.bma.network.acme.com
+        Subject Public Key Info:
+...</code></pre></div>
+</section><section>
+
+<h2 id="revoke-certificates">Revoke certificates</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>vault write switches_pki/revoke \
+    serial_number=15-32-65-89-7b-f9-29-86-57-13-6e-c4-c1-1e-9b-e6-5e-d4-d1-9f
+Key                        Value
+---                        -----
+revocation_time            1578847049
+revocation_time_rfc3339    2020-01-12T16:37:29.336790549Z</code></pre></div>
+</section><section>
+
+<h2 id="verify-crl">Verify CRL</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ curl -sS http://127.0.0.1:8200/v1/switches_pki/crl/pem \
+    | openssl crl -inform PEM -text -noout
+Certificate Revocation List (CRL):
+        Version 2 (0x1)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = AU, ST = Some-State, O = Internet Widgits Pty Ltd
+        Last Update: Jan 12 17:22:05 2020 GMT
+        Next Update: Jan 15 17:22:05 2020 GMT
+        CRL extensions:
+            X509v3 Authority Key Identifier:
+                keyid:48:8D:C9:56:33:AD:44:CD:51:55:D5:B2:27:F8:5B:15:62:CB:A6:6E
+
+Revoked Certificates:
+    Serial Number: 153265897BF9298657136EC4C11E9BE65ED4D19F
+        Revocation Date: Jan 12 17:22:05 2020 GMT
+    Signature Algorithm: sha256WithRSAEncryption
+         36:51:1e:55:f1:91:e7:51:25:0c:4b:48:ea:ec:b7:e8:8c:d4:
+...</code></pre></div>
+</section><section>
+
+<h2 id="generating-cetificates-programmatically">Generating cetificates programmatically</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">gen_cert</span>(common_name):
+    client <span style="color:#f92672">=</span> hvac<span style="color:#f92672">.</span>Client()
+    client<span style="color:#f92672">.</span>token <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>getenv(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">HCV_TOKEN</span><span style="color:#e6db74">&#34;</span>)
+
+    resp <span style="color:#f92672">=</span> client<span style="color:#f92672">.</span>secrets<span style="color:#f92672">.</span>pki<span style="color:#f92672">.</span>generate_certificate(
+        mount_point<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">switches_pki</span><span style="color:#e6db74">&#34;</span>,   <span style="color:#75715e"># path</span>
+        name<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">network-acme-com</span><span style="color:#e6db74">&#34;</span>,      <span style="color:#75715e"># role</span>
+        common_name<span style="color:#f92672">=</span>f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{common_name}.network.acme.com</span><span style="color:#e6db74">&#34;</span>,
+    )
+    sn <span style="color:#f92672">=</span> resp<span style="color:#f92672">.</span>json()[<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">data</span><span style="color:#e6db74">&#34;</span>][<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">serial_number</span><span style="color:#e6db74">&#34;</span>]
+    key <span style="color:#f92672">=</span> resp<span style="color:#f92672">.</span>json()[<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">data</span><span style="color:#e6db74">&#34;</span>][<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">private_key</span><span style="color:#e6db74">&#34;</span>]
+    crt <span style="color:#f92672">=</span> resp<span style="color:#f92672">.</span>json()[<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">data</span><span style="color:#e6db74">&#34;</span>][<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">certificate</span><span style="color:#e6db74">&#34;</span>]
+
+    <span style="color:#66d9ef">print</span>(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{common_name}.network.acme.com: {sn}</span><span style="color:#e6db74">&#34;</span>)
+
+    <span style="color:#66d9ef">with</span> open(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">certs/{common_name}.crt</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">w+</span><span style="color:#e6db74">&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        f<span style="color:#f92672">.</span>write(crt)  <span style="color:#75715e"># save the cert</span>
+    <span style="color:#66d9ef">with</span> open(f<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">certs/{common_name}.key</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">w+</span><span style="color:#e6db74">&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        f<span style="color:#f92672">.</span>write(key)  <span style="color:#75715e"># save the key</span></code></pre></div>
+<p class="bs-callout bs-callout-info">
+Full example can be found in <code>cert_gen.py</code>
+</p>
+
+</section><section>
+
+<h2 id="what-can-i-do-with-this">What can I do with this?</h2>
+
+<ol>
+<li>Integrate with ZTP to provision certificates</li>
+<li>Use two CAs to provide mTLS authentication</li>
+<li>Stop ignoring certificate warnings!</li>
+</ol>
+
+<p class="bs-callout bs-callout-info">
+Note that vault has a similar plugin to manage <strong>ssh keys</strong>
+</p>
+
+</section>
+</section>
+    <section><section data-shortcode-section>
 <h2 id="maybe">Maybe</h2>
 
 </section><section>
@@ -944,5 +1138,5 @@ rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
 
     
     
-  <script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10&v=2"></' + 'script>')</script></body>
+  </body>
 </html>
