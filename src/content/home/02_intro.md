@@ -3,14 +3,15 @@
 
 {{% section %}}
 
-# Introduction
-
-1. Introduction
- 1. Disclaimer
- 2. What are secrets
-1. {{< greyed c="One" >}}
-1. {{< greyed c="Two" >}}
-
+1. {{< notgreyed c="Introduction" >}}
+1. {{< greyed c="Do's and Dont's" >}}
+1. {{< greyed c="Intro to GnuPG" >}}
+1. {{< greyed c="Encrypted Environment" >}}
+1. {{< greyed c="Encrypted Inventory" >}}
+1. {{< greyed c="Hashicorp Vault 101" >}}
+1. {{< greyed c="Storing secrets in HCV" >}}
+1. {{< greyed c="Building a PKI with HCV" >}}
+1. {{< greyed c="Closing thoughts" >}}
 
 ---
 
@@ -67,7 +68,7 @@ Not so easy to store and consume, needs a store that can be queried and that is 
 
 
 {{<box class="bs-callout bs-callout-info">}}
-💡 This applies not only to services but any piece of code that runs without user interaction.
+This applies not only to services but any piece of code that runs without user interaction.
 {{</box>}}
 
 {{% /section %}}

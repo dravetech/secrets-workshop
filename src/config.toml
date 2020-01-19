@@ -24,3 +24,4 @@ isHTML = true
 
 [params.reveal_hugo]
 history = true
+transition = "none"

@@ -3,6 +3,18 @@
 
 {{% section %}}
 
+1. {{< greyed c="Introduction" >}}
+1. {{< greyed c="Do's and Dont's" >}}
+1. {{< greyed c="Intro to GnuPG" >}}
+1. {{< notgreyed c="Encrypted Environment" >}}
+1. {{< greyed c="Encrypted Inventory" >}}
+1. {{< greyed c="Hashicorp Vault 101" >}}
+1. {{< greyed c="Storing secrets in HCV" >}}
+1. {{< greyed c="Building a PKI with HCV" >}}
+1. {{< greyed c="Closing thoughts" >}}
+
+---
+
 # Encrypted environment
 
 In this example we are going to use an encrypted file to load environment variables that will only be available to our application.
@@ -103,7 +115,7 @@ Hosts:
 rtr00.bma:
     groups:
         - bma
-rtr01,bma:
+rtr01.bma:
     groups:
         - bma
 rtr00.cdg:
@@ -188,7 +200,7 @@ $ env $(gpg --decrypt secrets.env.gpg) ./nornir_script.py
 gpg: AES encrypted data
 gpg: encrypted with 1 passphrase
 rtr00.bma - automator/this-is=the-password-for-bma
-rtr01,bma - automator/this-is=the-password-for-bma
+rtr01.bma - automator/this-is=the-password-for-bma
 rtr00.cdg - automator/this-is-the-default-password
 rtr01.cdg - automator/this-is-the-default-password
 
@@ -196,7 +208,7 @@ rtr01.cdg - automator/this-is-the-default-password
 
 ---
 
-# Other variants
+## Other variants
 
 1. Encrypt/Decrypt using asymmetric encryption
 2. Decrypt directly in the python code with [python-gnupg](https://pythonhosted.org/python-gnupg/)

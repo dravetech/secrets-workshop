@@ -3,6 +3,18 @@
 
 {{% section %}}
 
+1. {{< greyed c="Introduction" >}}
+1. {{< greyed c="Do's and Dont's" >}}
+1. {{< greyed c="Intro to GnuPG" >}}
+1. {{< greyed c="Encrypted Environment" >}}
+1. {{< greyed c="Encrypted Inventory" >}}
+1. {{< greyed c="Hashicorp Vault 101" >}}
+1. {{< notgreyed c="Storing secrets in HCV" >}}
+1. {{< greyed c="Building a PKI with HCV" >}}
+1. {{< greyed c="Closing thoughts" >}}
+
+---
+
 # HCV: secrets
 
 In this section we are going to:

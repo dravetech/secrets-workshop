@@ -3,7 +3,21 @@
 
 {{% section %}}
 
+1. {{< greyed c="Introduction" >}}
+1. {{< notgreyed c="Do's and Dont's" >}}
+1. {{< greyed c="Intro to GnuPG" >}}
+1. {{< greyed c="Encrypted Environment" >}}
+1. {{< greyed c="Encrypted Inventory" >}}
+1. {{< greyed c="Hashicorp Vault 101" >}}
+1. {{< greyed c="Storing secrets in HCV" >}}
+1. {{< greyed c="Building a PKI with HCV" >}}
+1. {{< greyed c="Closing thoughts" >}}
+
+---
+
 # Do's and Don'ts
+
+Short tips about things you can do and you should avoid when dealing with secrets.
 
 ---
 
@@ -36,10 +50,6 @@ history | tail -n 1
 ---
 
 Orchestrators like `kubernetes`, `docker swarm`, etc. have mechanisms to inject secrets into environment variables and files for you, use those capabilities where available!
-
----
-
-## Minimize paper trail
 
 ---
 

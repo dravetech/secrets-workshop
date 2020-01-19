@@ -3,6 +3,18 @@
 
 {{% section %}}
 
+1. {{< greyed c="Introduction" >}}
+1. {{< greyed c="Do's and Dont's" >}}
+1. {{< greyed c="Intro to GnuPG" >}}
+1. {{< greyed c="Encrypted Environment" >}}
+1. {{< notgreyed c="Encrypted Inventory" >}}
+1. {{< greyed c="Hashicorp Vault 101" >}}
+1. {{< greyed c="Storing secrets in HCV" >}}
+1. {{< greyed c="Building a PKI with HCV" >}}
+1. {{< greyed c="Closing thoughts" >}}
+
+---
+
 # Encrypted inventory
 
 In this example we are going to encrypt the data we want to consume with ``gpg`` and load it directly from the code.
@@ -146,10 +158,14 @@ Full script can be found in the same folder as <code>nornir_script.py</code>
 $ ./nornir_script.py
 Password:
 rtr00.bma - automator/this-is-the-password-for-bma
-rtr01,bma - automator/this-is-the-password-for-bma
+rtr01.bma - automator/this-is-the-password-for-bma
 rtr00.cdg - automator/this-is-the-default-password
 rtr01.cdg - automator/this-is-the-default-password
 ```
+
+---
+
+Nornir specifics are not important, what's important is to see you can leverage tools that have been vetted by experts in security and cryptography.
 
 
 {{% /section %}}

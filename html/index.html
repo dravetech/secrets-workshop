@@ -32,27 +32,47 @@
   
 
     <section><section data-shortcode-section>
-<h1 id="agenda">Agenda</h1>
-
 <ol>
-<li>Introduction</li>
+<li><p class='agenda notgreyed '>Introduction</p></li>
+
+<li><p class='agenda notgreyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda notgreyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda notgreyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda notgreyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda notgreyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda notgreyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda notgreyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda notgreyed '>Closing thoughts</p></li>
 </ol>
+
 </section>
 </section>
     <section><section data-shortcode-section>
-<h1 id="introduction">Introduction</h1>
-
 <ol>
-<li>Introduction
+<li><p class='agenda notgreyed '>Introduction</p></li>
 
-<ol>
-<li>Disclaimer</li>
-<li>What are secrets</li>
-</ol></li>
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
 
-<li><p><span class='greyed '>One</span></p></li>
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
 
-<li><p><span class='greyed '>Two</span></p></li>
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
 </ol>
 
 </section><section>
@@ -104,13 +124,37 @@ device <span style="color:#f92672">=</span> ConnectHandler(<span style="color:#f
 <p>Not so easy to store and consume, needs a store that can be queried and that is secure. This store may require additional authentication.</p>
 
 <p class="bs-callout bs-callout-info">
-💡 This applies not only to services but any piece of code that runs without user interaction.
+This applies not only to services but any piece of code that runs without user interaction.
 </p>
 
 </section>
 </section>
     <section><section data-shortcode-section>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda notgreyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
+</ol>
+
+</section><section>
+
 <h1 id="do-s-and-don-ts">Do&rsquo;s and Don&rsquo;ts</h1>
+
+<p>Short tips about things you can do and you should avoid when dealing with secrets.</p>
 
 </section><section>
 
@@ -139,10 +183,6 @@ history | tail -n 1
 
 </section><section>
 
-<h2 id="minimize-paper-trail-1">Minimize paper trail</h2>
-
-</section><section>
-
 <h2 id="do-not-hardcode-secrets">Do not hardcode secrets</h2>
 
 <p>Never hardcode secrets into your application, not even test/dev secrets.</p>
@@ -164,18 +204,38 @@ history | tail -n 1
 </section>
 </section>
     <section><section data-shortcode-section>
-<h1 id="gnupg">GnuPG</h1>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda notgreyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
+</ol>
+
+</section><section>
+
+<h1 id="intro-to-gnupg">Intro to GnuPG</h1>
 
 <p class="bs-callout bs-callout-quote">
  <a href="https://gnupg.org/">GnuPG</a> is a complete and free implementation of the OpenPGP standard as defined by RFC4880 (also known as PGP). GnuPG allows you to encrypt and sign your data and communications; it features a versatile key management system, along with access modules for all kinds of public key directories. GnuPG, also known as GPG, is a command line tool with features for easy integration with other applications. A wealth of frontend applications and libraries are available. GnuPG also provides support for S/MIME and Secure Shell (ssh).
 </p>
 
-</section><section>
-
-<p>In this section we are going to see how to use it to encrypt a decrypt files</p>
+<p>In this section we are going to see how to use it to encrypt a decrypt files with <code>GnuPG</code></p>
 
 <p class="bs-callout bs-callout-info">
-💡 Files for this section can be found in the folder <code>./code/gpg/</code>
+Files for this section can be found in the folder <code>./code/gpg/</code>
 </p>
 
 </section><section>
@@ -190,28 +250,50 @@ This is text we want to secure</code></pre></div>
 
 $ file unencrypted.txt.gpg
 unencrypted.txt.gpg: GPG symmetrically encrypted data (AES cipher)</code></pre></div>
-<p class="bs-callout bs-callout-info">
-💡 Password is <code>apassword</code>
-</p>
-
 </section><section>
 
 <h2 id="decrypting-files">Decrypting files</h2>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ gpg --decrypt -o unencrypted.txt unencrypted.txt.gpg
 gpg: AES encrypted data
 gpg: encrypted with 1 passphrase</code></pre></div>
+<p class="bs-callout bs-callout-info">
+Password in the example file is <code>apassword</code>
+</p>
+
 </section><section>
 
 <h2 id="more-about-gnupg">More about GnuPG</h2>
 
 <ul>
 <li>Smartcards</li>
-<li>asymmetric encryption</li>
+<li>Asymmetric encryption</li>
 </ul>
 
 </section>
 </section>
     <section><section data-shortcode-section>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda notgreyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
+</ol>
+
+</section><section>
+
 <h1 id="encrypted-environment">Encrypted environment</h1>
 
 <p>In this example we are going to use an encrypted file to load environment variables that will only be available to our application.</p>
@@ -295,7 +377,7 @@ Nornir inventory can be found under <code>./code/nornir/</code>
 rtr00.bma:
     groups:
         - bma
-rtr01,bma:
+rtr01.bma:
     groups:
         - bma
 rtr00.cdg:
@@ -358,12 +440,12 @@ nr<span style="color:#f92672">.</span>run(task<span style="color:#f92672">=</spa
 gpg: AES encrypted data
 gpg: encrypted with 1 passphrase
 rtr00.bma - automator/this-is=the-password-for-bma
-rtr01,bma - automator/this-is=the-password-for-bma
+rtr01.bma - automator/this-is=the-password-for-bma
 rtr00.cdg - automator/this-is-the-default-password
 rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
 </section><section>
 
-<h1 id="other-variants">Other variants</h1>
+<h2 id="other-variants">Other variants</h2>
 
 <ol>
 <li>Encrypt/Decrypt using asymmetric encryption</li>
@@ -374,6 +456,28 @@ rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
 </section>
 </section>
     <section><section data-shortcode-section>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda notgreyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
+</ol>
+
+</section><section>
+
 <h1 id="encrypted-inventory">Encrypted inventory</h1>
 
 <p>In this example we are going to encrypt the data we want to consume with <code>gpg</code> and load it directly from the code.</p>
@@ -492,12 +596,38 @@ Full script can be found in the same folder as <code>nornir_script.py</code>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ ./nornir_script.py
 Password:
 rtr00.bma - automator/this-is-the-password-for-bma
-rtr01,bma - automator/this-is-the-password-for-bma
+rtr01.bma - automator/this-is-the-password-for-bma
 rtr00.cdg - automator/this-is-the-default-password
 rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
+</section><section>
+
+<p>Nornir specifics are not important, what&rsquo;s important is to see you can leverage tools that have been vetted by experts in security and cryptography.</p>
+
 </section>
 </section>
     <section><section data-shortcode-section>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda notgreyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
+</ol>
+
+</section><section>
+
 <h1 id="hashicorp-vault-101">Hashicorp vault 101</h1>
 
 <p><a href="https://www.vaultproject.io/">Hashicorp&rsquo;s vault</a>, often abbreviated as <code>hcv</code>, is a service that allows you to:</p>
@@ -505,8 +635,6 @@ rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
 <p class="bs-callout">
 secure, store and tightly control access to tokens, passwords, certificates, encryption keys [...] using a UI, CLI, or HTTP API.
 </p>
-
-<p>Service can be interacted with using the CLI, a WEB UI and an API.</p>
 
 </section><section>
 
@@ -568,9 +696,11 @@ Key              Value
 created_time     2020-01-06T17:36:52.977018765Z
 deletion_time    n/a
 destroyed        false
-version          2
+version          2</code></pre></div>
+</section><section>
 
-$ vault kv get secret/bma/routers
+<p>Retrieving latest version:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv get secret/bma/routers
 ====== Metadata ======
 Key              Value
 ---              -----
@@ -584,6 +714,8 @@ Key         Value
 ---         -----
 password    a-new-password</code></pre></div>
 </section><section>
+
+<p>Retrieving a previous version:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="nohighlight" data-noescape>$ vault kv get --version 1 secret/bma/routers
 ====== Metadata ======
 Key              Value
@@ -676,6 +808,28 @@ version          1</code></pre></div>
 </section>
 </section>
     <section><section data-shortcode-section>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda notgreyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
+</ol>
+
+</section><section>
+
 <h1 id="hcv-secrets">HCV: secrets</h1>
 
 <p>In this section we are going to:</p>
@@ -853,6 +1007,28 @@ rtr01.cdg - automator/this-is-the-default-password</code></pre></div>
 </section>
 </section>
     <section><section data-shortcode-section>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda notgreyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda greyed '>Closing thoughts</p></li>
+</ol>
+
+</section><section>
+
 <h1 id="pki">PKI</h1>
 
 <p>In this section we are going to:</p>
@@ -1047,27 +1223,29 @@ Note that vault has a similar plugin to manage <strong>ssh keys</strong>
 </section>
 </section>
     <section><section data-shortcode-section>
-<h2 id="maybe">Maybe</h2>
+<ol>
+<li><p class='agenda greyed '>Introduction</p></li>
+
+<li><p class='agenda greyed '>Do&#39;s and Dont&#39;s</p></li>
+
+<li><p class='agenda greyed '>Intro to GnuPG</p></li>
+
+<li><p class='agenda greyed '>Encrypted Environment</p></li>
+
+<li><p class='agenda greyed '>Encrypted Inventory</p></li>
+
+<li><p class='agenda greyed '>Hashicorp Vault 101</p></li>
+
+<li><p class='agenda greyed '>Storing secrets in HCV</p></li>
+
+<li><p class='agenda greyed '>Building a PKI with HCV</p></li>
+
+<li><p class='agenda notgreyed '>Closing thoughts</p></li>
+</ol>
 
 </section><section>
 
-<h3 id="authentication-integrity-and-privacy">Authentication, Integrity and Privacy</h3>
-
-<p><strong>Authentication</strong> is the act of being able to prove the identity of a person or system</p>
-
-<p>Data has <strong>integrity</strong> if it can be proven it hasn&rsquo;t been manipulated by an unauthorized actor</p>
-
-<p><strong>Privacy</strong> is the condition of being free from unauthorized observers</p>
-
-</section><section>
-
-<h3 id="authentication-integrity-and-privacy-1">Authentication, Integrity and Privacy</h3>
-
-<p>If you can&rsquo;t guarantee any of these properties you can&rsquo;t guarantee a system is secure</p>
-
-<p><strong>TLS</strong> guarantees all three properties, however, if the private key of the certificate is leaked a malicious actor could impersonate the server and perform a MiTM attack (authentication being voided), decrypt user-server communications (privacy being compromised) and even manipulate the HTML code to redirect the user to malicious servers (integrity no longer guaranteed)</p>
-
-</section><section>
+<h1 id="closing-thoughts">Closing Thoughts</h1>
 
 </section>
 </section>
@@ -1088,7 +1266,7 @@ Note that vault has a similar plugin to manage <strong>ssh keys</strong>
   document.getElementsByTagName('head')[0].appendChild(link);
 </script>
 
-<script type="application/json" id="reveal-hugo-site-params">{"history":true}</script>
+<script type="application/json" id="reveal-hugo-site-params">{"history":true,"transition":"none"}</script>
 <script type="application/json" id="reveal-hugo-page-params">null</script>
 
 <script src="/reveal-js/js/reveal.js"></script>

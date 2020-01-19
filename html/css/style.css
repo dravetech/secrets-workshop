@@ -42,7 +42,12 @@
 	box-shadow: 0 0;
 }
 
+.reveal ol li p.agenda {
+	margin: 0;
+}
+
 .greyed {
+	margin: 0;
 	color: #444;
 }
 

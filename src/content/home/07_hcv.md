@@ -3,6 +3,18 @@
 
 {{% section %}}
 
+1. {{< greyed c="Introduction" >}}
+1. {{< greyed c="Do's and Dont's" >}}
+1. {{< greyed c="Intro to GnuPG" >}}
+1. {{< greyed c="Encrypted Environment" >}}
+1. {{< greyed c="Encrypted Inventory" >}}
+1. {{< notgreyed c="Hashicorp Vault 101" >}}
+1. {{< greyed c="Storing secrets in HCV" >}}
+1. {{< greyed c="Building a PKI with HCV" >}}
+1. {{< greyed c="Closing thoughts" >}}
+
+---
+
 # Hashicorp vault 101
 
 [Hashicorp's vault](https://www.vaultproject.io/), often abbreviated as `hcv`, is a service that allows you to:
@@ -10,8 +22,6 @@
 {{<box class="bs-callout">}}
 secure, store and tightly control access to tokens, passwords, certificates, encryption keys [...] using a UI, CLI, or HTTP API.
 {{</box>}}
-
-Service can be interacted with using the CLI, a WEB UI and an API.
 
 ---
 
@@ -89,7 +99,13 @@ created_time     2020-01-06T17:36:52.977018765Z
 deletion_time    n/a
 destroyed        false
 version          2
+```
 
+---
+
+Retrieving latest version:
+
+``` txt
 $ vault kv get secret/bma/routers
 ====== Metadata ======
 Key              Value
@@ -107,8 +123,9 @@ password    a-new-password
 
 ---
 
-``` txt
+Retrieving a previous version:
 
+``` txt
 $ vault kv get --version 1 secret/bma/routers
 ====== Metadata ======
 Key              Value
