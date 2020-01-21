@@ -11,6 +11,6 @@
 1. {{< notgreyed c="Hashicorp Vault 101" >}}
 1. {{< notgreyed c="Storing secrets in HCV" >}}
 1. {{< notgreyed c="Building a PKI with HCV" >}}
-1. {{< notgreyed c="Closing thoughts" >}}
+1. {{< notgreyed c="Summary" >}}
 
 {{% /section %}}
