@@ -30,8 +30,4 @@ In this workshop we have seen:
 5. How to secure secrets with HCV
 6. How to build a PKI with HCV
 
----
-
-# EOF
-
 {{% /section %}}
